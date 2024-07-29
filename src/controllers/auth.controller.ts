@@ -9,31 +9,8 @@ import RefreshToken from "../models/refreshtoken.model";
 dotenv.config();
 
 const secretKey = process.env.JWT_SECRET;
-const refreshSecretKey = process.env.REFRESH_JWT_SECRET;
 
-export const getUsers = async (req: Request, res: Response) => {
-  try {
-    const users = await User.findAll();
-    res.json(users);
-  } catch (error: any) {
-    console.log("Error: ", error.message);
-  }
-};
-
-export const getUserById = async (req: Request, res: Response) => {
-  try {
-    const user = await User.findOne({
-      where: {
-        id: req.params.id,
-      },
-    });
-    res.json(user);
-  } catch (error: any) {
-    console.log("Error: ", error.message);
-  }
-};
-
-export const createUser = async (req: Request, res: Response) => {
+export const registerUser = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
     const salt = await bcryptjs.genSalt(10);
@@ -48,6 +25,7 @@ export const createUser = async (req: Request, res: Response) => {
     res.json(user);
   } catch (error: any) {
     console.log("Error: ", error.message);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
@@ -78,42 +56,73 @@ export const loginUser = async (req: Request, res: Response) => {
     await RefreshToken.create({
       token: refreshToken,
       userId: user.id,
-      // expires in 30 minutes
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      // expires in 7 days
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
     });
 
     res.json({ token, refreshToken });
   } catch (error: any) {
     console.log("Error: ", error.message);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const logoutUser = async (req: Request, res: Response) => {
   try {
-    const user = await User.update(req.body, {
-      where: {
-        id: req.params.id,
-      },
-    });
-    if (user[0] === 1) {
-      res.json({ message: "User updated successfully." });
-    } else {
-      res.json({ message: "User not found." });
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      await RefreshToken.destroy({
+        where: {
+          token: refreshToken,
+        },
+      });
     }
+    res.json({ message: "User logged out successfully." });
   } catch (error: any) {
     console.log("Error: ", error.message);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const refreshToken = async (req: Request, res: Response) => {
   try {
-    await User.destroy({
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Invalid refresh token." });
+    }
+
+    const storedToken = await RefreshToken.findOne({
       where: {
-        id: req.params.id,
+        token: refreshToken,
       },
     });
-    res.json({ message: "User deleted successfully." });
+
+    if (!storedToken) {
+      return res.status(400).json({ message: "Invalid refresh token." });
+    }
+
+    if (new Date() > storedToken.expiresAt) {
+      return res.status(400).json({ message: "Refresh token expired." });
+    }
+
+    const user = await User.findOne({
+      where: {
+        id: storedToken.userId,
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid refresh token." });
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email }, secretKey!, {
+      expiresIn: "30m",
+    });
+
+    res.json({ token });
   } catch (error: any) {
     console.log("Error: ", error.message);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
