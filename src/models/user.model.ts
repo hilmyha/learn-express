@@ -7,7 +7,7 @@ const User = db.define("users", {
     autoIncrement: true,
     primaryKey: true,
   },
-  username: {
+  name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -16,7 +16,7 @@ const User = db.define("users", {
     allowNull: false,
   },
   gender: {
-    type: DataTypes.BOOLEAN,
+    type: DataTypes.STRING,
     allowNull: false,
   },
 }, {
@@ -24,6 +24,7 @@ const User = db.define("users", {
   timestamps: true,
   freezeTableName: true,
 }
+
 );
 
 export default User;
