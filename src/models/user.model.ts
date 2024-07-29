@@ -1,13 +1,33 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Model, Optional } from "sequelize";
 import db from "../config/database";
 
-const User = db.define("users", {
+interface UserAttributes {
+  id?: number;
+  username: string;
+  email: string;
+  password: string;
+}
+
+interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
+
+class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
+  public id!: number;
+  public username!: string;
+  public email!: string;
+  public password!: string;
+
+  // timestamps!
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+User.init({
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  name: {
+  username: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -15,17 +35,16 @@ const User = db.define("users", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  gender: {
+  password: {
     type: DataTypes.STRING,
     allowNull: false,
   },
 }, {
+  sequelize: db,
   tableName: "users",
   timestamps: true,
   freezeTableName: true,
-}
-
-);
+});
 
 export default User;
 
