@@ -3,10 +3,13 @@ import { Request, Response } from "express";
 import User from "../models/user.model";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
+import RefreshToken from "../models/refreshtoken.mode";
 
 dotenv.config();
 
 const secretKey = process.env.JWT_SECRET;
+const refreshSecretKey = process.env.REFRESH_JWT_SECRET;
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
@@ -67,11 +70,63 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
-    const token = jwt.sign({ id: user.id }, secretKey!, {
-      expiresIn: "1h",
+    const token = jwt.sign({ id: user.id, email: user.email }, secretKey!, {
+      expiresIn: "30m",
+    });
+    const refreshToken = uuidv4();
+
+    await RefreshToken.create({
+      token: refreshToken,
+      userId: user.id,
+      // expires in 30 minutes
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
     });
 
-    res.json({ token });
+    res.json({ token, refreshToken });
+  } catch (error: any) {
+    console.log("Error: ", error.message);
+  }
+};
+
+export const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Invalid refresh token." });
+    }
+
+    const storedToken = await RefreshToken.findOne({
+      where: {
+        token: refreshToken,
+      },
+    });
+
+    const user = await User.findOne({
+      where: {
+        id: storedToken?.userId,
+      },
+    });
+
+    if (!storedToken || !user) {
+      return res.status(400).json({ message: "Invalid refresh token." });
+    }
+
+    const newToken = jwt.sign({ id: user.id, email: user.email }, secretKey!, {
+      expiresIn: "30m",
+    });
+    const newRefreshToken = uuidv4();
+
+    await RefreshToken.create({
+      token: newRefreshToken,
+      userId: user.id,
+      // expires in 30 minutes
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+    });
+
+    await storedToken.destroy();
+
+    res.json({ token: newToken, refreshToken: newRefreshToken });
   } catch (error: any) {
     console.log("Error: ", error.message);
   }
@@ -96,7 +151,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const logoutUser = async (req: Request, res: Response) => {
   try {
-    
+    res.json({ message: "User logged out successfully." });
   } catch (error: any) {
     console.log("Error: ", error.message);
   }
