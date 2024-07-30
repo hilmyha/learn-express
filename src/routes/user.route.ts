@@ -6,10 +6,11 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/user.controller";
+import authMiddleware from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.get("/users", getUsers);
+router.get("/users", authMiddleware, getUsers);
 router.get("/users/:id", getUserById);
 router.post("/users", createUser);
 router.put("/users/:id", updateUser);
