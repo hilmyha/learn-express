@@ -7,10 +7,11 @@ import {
   deleteUser,
 } from "../controllers/user.controller";
 import authMiddleware from "../middleware/auth.middleware";
+import isAdminMiddleware from "../middleware/isadmin.middleware";
 
 const router = Router();
 
-router.get("/users", authMiddleware, getUsers);
+router.get("/users", [authMiddleware, isAdminMiddleware], getUsers);
 router.get("/users/:id", authMiddleware, getUserById);
 router.post("/users", authMiddleware, createUser);
 router.put("/users/:id", authMiddleware, updateUser);

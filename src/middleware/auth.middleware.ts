@@ -21,9 +21,10 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
 
   jwt.verify(token, secretKey!, (err, user) => {
     if (err) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden: Invalid token" });
     }
 
+    
     req.user = user;
     next();
   });

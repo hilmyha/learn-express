@@ -6,45 +6,58 @@ interface UserAttributes {
   username: string;
   email: string;
   password: string;
+
+  isAdmin?: boolean;
 }
 
 interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
 
-class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
+class User
+  extends Model<UserAttributes, UserCreationAttributes>
+  implements UserAttributes
+{
   public id!: number;
   public username!: string;
   public email!: string;
   public password!: string;
+  public isAdmin!: boolean;
 
   // timestamps!
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
 
-User.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
+User.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    username: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    isAdmin: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   },
-  username: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-}, {
-  sequelize: db,
-  tableName: "users",
-  timestamps: true,
-  freezeTableName: true,
-});
+  {
+    sequelize: db,
+    tableName: "users",
+    timestamps: true,
+    freezeTableName: true,
+  }
+);
 
 export default User;
 
