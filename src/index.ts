@@ -9,7 +9,11 @@ import UserRoute from "./routes/user.route";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors(
+  {
+    origin: "*", // allow to server to accept request from different origin
+  }
+));
 app.use(express.json());
 
 // routes

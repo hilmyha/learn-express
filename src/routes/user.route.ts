@@ -11,9 +11,9 @@ import authMiddleware from "../middleware/auth.middleware";
 const router = Router();
 
 router.get("/users", authMiddleware, getUsers);
-router.get("/users/:id", getUserById);
-router.post("/users", createUser);
-router.put("/users/:id", updateUser);
-router.delete("/users/:id", deleteUser);
+router.get("/users/:id", authMiddleware, getUserById);
+router.post("/users", authMiddleware, createUser);
+router.put("/users/:id", authMiddleware, updateUser);
+router.delete("/users/:id", authMiddleware, deleteUser);
 
 export default router;

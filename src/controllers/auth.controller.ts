@@ -60,7 +60,11 @@ export const loginUser = async (req: Request, res: Response) => {
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
     });
 
-    res.json({ token, refreshToken });
+    res.json({
+      token,
+      refreshToken,
+      user: { id: user.id, username: user.username, email: user.email },
+    });
   } catch (error: any) {
     console.log("Error: ", error.message);
     res.status(500).json({ message: "Internal server error." });
@@ -78,6 +82,28 @@ export const logoutUser = async (req: Request, res: Response) => {
       });
     }
     res.json({ message: "User logged out successfully." });
+  } catch (error: any) {
+    console.log("Error: ", error.message);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+export const loadUser = async (req: Request, res: Response) => {
+  try {
+    const userId = (req.user as any).id;
+    const user = await User.findByPk(userId, {
+      attributes: ["id", "username", "email"],
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found." });
+    }
+
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+    });
   } catch (error: any) {
     console.log("Error: ", error.message);
     res.status(500).json({ message: "Internal server error." });

@@ -9,7 +9,7 @@ import RefreshToken from "../models/refreshtoken.model";
 dotenv.config();
 
 const secretKey = process.env.JWT_SECRET;
-const refreshSecretKey = process.env.REFRESH_JWT_SECRET;
+// const refreshSecretKey = process.env.REFRESH_JWT_SECRET;
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
