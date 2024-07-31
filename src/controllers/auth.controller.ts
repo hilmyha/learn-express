@@ -48,13 +48,9 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email, isAdmin: user.isAdmin },
-      secretKey!,
-      {
-        expiresIn: "30m",
-      }
-    );
+    const token = jwt.sign({ id: user.id, email: user.email }, secretKey!, {
+      expiresIn: "30m",
+    });
     const refreshToken = uuidv4();
 
     await RefreshToken.create({

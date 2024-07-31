@@ -12,9 +12,9 @@ import isAdminMiddleware from "../middleware/isadmin.middleware";
 const router = Router();
 
 router.get("/users", [authMiddleware, isAdminMiddleware], getUsers);
-router.get("/users/:id", authMiddleware, getUserById);
-router.post("/users", authMiddleware, createUser);
-router.put("/users/:id", authMiddleware, updateUser);
-router.delete("/users/:id", authMiddleware, deleteUser);
+router.get("/users/:id", [authMiddleware, isAdminMiddleware], getUserById);
+router.post("/users", [authMiddleware, isAdminMiddleware], createUser);
+router.put("/users/:id", [authMiddleware, isAdminMiddleware], updateUser);
+router.delete("/users/:id", [authMiddleware, isAdminMiddleware], deleteUser);
 
 export default router;
